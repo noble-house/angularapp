@@ -111,9 +111,13 @@ selectNodeVersion
 
 # 3. Install NPM packages
 if [ -e "$DEPLOYMENT_TARGET/package.json" ]; then
+  echo "test message 9999"
   cd "$DEPLOYMENT_TARGET"
-  eval $NPM_CMD install --production
-  eval $NPM_CMD install --only=dev
+  echo "test message 9998 $DEPLOYMENT_TARGET"
+  eval /opt/nodejs/10.1.0/bin/npm install --production
+  echo "test message 9997 $DEPLOYMENT_TARGET"
+  eval /opt/nodejs/10.1.0/bin/npm install --only=dev
+  echo "test message 9996 $DEPLOYMENT_TARGET"
   exitWithMessageOnError "npm failed"
   cd - > /dev/null
 fi
@@ -121,10 +125,14 @@ fi
 # 4. Angular Prod Build
 if [ -e "$DEPLOYMENT_TARGET/angular.json" ]; then
   cd "$DEPLOYMENT_TARGET"
-  eval ./node_modules/.bin/ng build --prod
+  pwd
+  #eval /opt/nodejs/8.11.2/bin/node /home/site/wwwroot/node_modules/.bin/ng build
+  eval /opt/nodejs/10.1.0/bin/node node_modules/.bin/ng build --prod
+  #eval ./node_modules/.bin/ng build --prod
   exitWithMessageOnError "Angular build failed"
   cd - > /dev/null
 fi
+
 
 ##################################################################################################################################
 
