@@ -100,37 +100,39 @@ selectNodeVersion () {
 
 echo Handling node.js deployment.
 
-# 1. KuduSync
-if [[ "$IN_PLACE_DEPLOYMENT" -ne "1" ]]; then
-  "$KUDU_SYNC_CMD" -v 50 -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TARGET" -n "$NEXT_MANIFEST_PATH" -p "$PREVIOUS_MANIFEST_PATH" -i ".git;.hg;.deployment;deploy.sh"
-  exitWithMessageOnError "Kudu Sync failed"
-fi
 
-# 2. Select node version
+
+# 1. Select node version
 selectNodeVersion
 
-# 3. Install NPM packages
-if [ -e "$DEPLOYMENT_TARGET/package.json" ]; then
+# 2. Install NPM packages
+if [ -e "$DEPLOYMENT_SOURCE/package.json" ]; then
   echo "test message 9999"
-  cd "$DEPLOYMENT_TARGET"
-  echo "test message 9998 $DEPLOYMENT_TARGET"
+  cd "$DEPLOYMENT_SOURCE"
+  echo "test message 9998 $DEPLOYMENT_SOURCE"
   eval /opt/nodejs/10.1.0/bin/npm install --production
-  echo "test message 9997 $DEPLOYMENT_TARGET"
+  echo "test message 9997 $DEPLOYMENT_SOURCE"
   eval /opt/nodejs/10.1.0/bin/npm install --only=dev
-  echo "test message 9996 $DEPLOYMENT_TARGET"
+  echo "test message 9996 $DEPLOYMENT_SOURCE"
   exitWithMessageOnError "npm failed"
   cd - > /dev/null
 fi
 
-# 4. Angular Prod Build
-if [ -e "$DEPLOYMENT_TARGET/angular.json" ]; then
-  cd "$DEPLOYMENT_TARGET"
+# 3. Angular Prod Build
+if [ -e "$DEPLOYMENT_SOURCE/angular.json" ]; then
+  cd "$DEPLOYMENT_SOURCE"
   pwd
   #eval /opt/nodejs/8.11.2/bin/node /home/site/wwwroot/node_modules/.bin/ng build
   eval /opt/nodejs/10.1.0/bin/node node_modules/.bin/ng build --prod
   #eval ./node_modules/.bin/ng build --prod
   exitWithMessageOnError "Angular build failed"
   cd - > /dev/null
+fi
+
+# 4. KuduSync
+if [[ "$IN_PLACE_DEPLOYMENT" -ne "1" ]]; then
+  "$KUDU_SYNC_CMD" -v 50 -f "$DEPLOYMENT_SOURCE/dist/angularapp" -t "$DEPLOYMENT_TARGET" -n "$NEXT_MANIFEST_PATH" -p "$PREVIOUS_MANIFEST_PATH" -i ".git;.hg;.deployment;deploy.sh"
+  exitWithMessageOnError "Kudu Sync failed"
 fi
 
 
